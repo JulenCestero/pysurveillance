@@ -9,7 +9,7 @@ git clone https://github.com/JulenCestero/pysurveillance.git
 cd pysurveillance
 ```
 
-- (Optional) Create new python virtual environment 
+- (Optional) Create new python virtual environment
 
 ```bash
 python3 -m venv venv
