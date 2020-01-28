@@ -66,12 +66,22 @@ def second_grade_analysis(df: pd.DataFrame, authors: pd.DataFrame, sources: pd.D
     cites_per_paper.columns = ['Cites']
     return cites_per_author, cites_per_source, cites_per_paper
 
+def third_grade_analysis(df: pd.DataFrame, authors: pd.DataFrame) -> pd.DataFrame:
+    '''
+        Authors per source per cites
+    '''
+    sources_per_author = pd.DataFrame(data={author: [df[df['Authors'].str.contains(author)]['Source title']] for author in authors})
+    num_sources_per_author = pd.DataFrame(data={author: [len(sources_per_author[author][0])] for author in authors}).T
+    num_sources_per_author.columns = ['Sources']
+    return num_sources_per_author
+
 def plot_first_grade_analysis(ppY: pd.DataFrame, ppAuth: pd.DataFrame, ppAff: pd.DataFrame) -> None:
     st.subheader('Number of publications per year')
     '''
         Number of publications per year
     '''
     st.line_chart(ppY)
+
     st.subheader('Number of publications per author')
     '''
         Publications by author #TODO: in future streamlit, change matplotlib to horizontal streamlit
@@ -83,7 +93,8 @@ def plot_first_grade_analysis(ppY: pd.DataFrame, ppAuth: pd.DataFrame, ppAff: pd
     ax.set_yticklabels(tuple(top_authors.index))
     ax.invert_yaxis()
     ax.set_title('Top 10 authors')
-    ax.set_xlabel = 'Publications'
+    ax.set_xlabel('Number of publications')
+    plt.tight_layout()
     st.pyplot()
 
 def plot_second_grade_analysis(cpAuth: pd.DataFrame, cpS: pd.DataFrame, cpP: pd.DataFrame) -> None:
@@ -97,6 +108,7 @@ def plot_second_grade_analysis(cpAuth: pd.DataFrame, cpS: pd.DataFrame, cpP: pd.
     plt.gca().invert_yaxis()
     plt.title('Top 10 authors')
     plt.xlabel = 'Prueba'
+    plt.tight_layout()
     st.pyplot()
 
     st.subheader('Top 10 Sources by cited number')
@@ -115,11 +127,24 @@ def plot_second_grade_analysis(cpAuth: pd.DataFrame, cpS: pd.DataFrame, cpP: pd.
     '''
         Top 10 Papers by cites
     '''
-    top_papers = ccP.sort_values(by=['Cites'], ascending=False).head(10)
+    top_papers = cpP.sort_values(by=['Cites'], ascending=False).head(10)
     plt.barh(np.arange(len(top_papers)), top_papers['Cites'])
     plt.yticks(np.arange(len(top_papers)), top_papers.index)
     plt.gca().invert_yaxis()
     plt.title('Top 10 papers')
+    # plt.xlabel('Cited times')
+    st.pyplot()
+
+def plot_third_grade_analysis(nSpAuth: pd.DataFrame) -> None:
+    '''
+        Top 10 Authors by number of Sources which cited them
+    '''
+    st.subheader('Top 10 Authors by number of Sources which cited them')
+    top_authors = nSpAuth.sort_values(by=['Sources'], ascending=False).head(10)
+    plt.barh(np.arange(len(top_authors)), top_authors['Sources'])
+    plt.yticks(np.arange(len(top_authors)), top_authors.index)
+    plt.gca().invert_yaxis()
+    plt.title('Top 10 authors')
     # plt.xlabel('Cited times')
     st.pyplot()
 
@@ -138,6 +163,8 @@ def main():
         plot_second_grade_analysis(second_cpAuth, second_cpS, second_cpP)
 
         st.header('3rd grade analysis')
+        third_nSpAuth = third_grade_analysis(df, authors)
+        plot_third_grade_analysis(third_nSpAuth)
 
 if __name__ == "__main__":
     main()
