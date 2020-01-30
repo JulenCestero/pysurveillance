@@ -161,8 +161,8 @@ def plot_third_grade_analysis(nSpAuth: pd.DataFrame, auth_kw: pd.DataFrame, idx_
         Author keywords word cloud
     '''
     st.subheader('Author keywords word cloud')
-    text = auth_kw.to_csv(index=False)
-    wordcloud = WordCloud(width=800, height=400).generate(text)
+    auth_kw_str = auth_kw.to_csv(index=False)
+    wordcloud = WordCloud(width=800, height=400).generate(auth_kw_str)
     plt.imshow(wordcloud, interpolation='bilinear')
     plt.axis("off")
     plt.tight_layout(pad=0)
@@ -173,8 +173,20 @@ def plot_third_grade_analysis(nSpAuth: pd.DataFrame, auth_kw: pd.DataFrame, idx_
         Index keywords word cloud
     '''
     st.subheader('Index keywords word cloud')
-    text = idx_kw.to_csv(index=False)
-    wordcloud = WordCloud(width=800, height=400).generate(text)
+    idx_kw_str = idx_kw.to_csv(index=False)
+    wordcloud = WordCloud(width=800, height=400).generate(idx_kw_str)
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis("off")
+    plt.tight_layout(pad=0)
+    plt.show()
+    st.pyplot(height=700)
+
+    '''
+        Merged keywords word cloud
+    '''
+    st.subheader('Merged key words word cloud')
+    merged_kw_str = f'{auth_kw_str}, {idx_kw_str}'
+    wordcloud = WordCloud(width=800, height=400).generate(merged_kw_str)
     plt.imshow(wordcloud, interpolation='bilinear')
     plt.axis("off")
     plt.tight_layout(pad=0)
