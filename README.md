@@ -27,3 +27,10 @@ pip install -r requirements.txt
 ```bash
 streamlit run streamlit_show.py
 ```
+
+## Usage
+
+- You first need a csv file from [Scopus](https://www.scopus.com/search/form.uri?display=basic) with the results of a query of 300-600 papers.
+- Follow the following gif
+
+![demo](demo.gif)
