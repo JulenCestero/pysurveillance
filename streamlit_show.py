@@ -5,11 +5,6 @@ import matplotlib.pyplot as plt
 from typing import Union
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
-# import argparse as arg
-# parser = arg.ArgumentParser()
-# parser.add_argument('-c', '--csv', help='csv file to analyze')
-# args = parser.parse_args()
-# print(args.csv)
 
 def substringSieve(string_list):
     '''
@@ -92,14 +87,6 @@ def plot_first_grade_analysis(ppY: pd.DataFrame, ppAuth: pd.DataFrame, ppAff: pd
     '''
     # fig, ax = plt.subplots()
     top_authors = ppAuth.sort_values(by=['Publications'], ascending=False).head(10)
-    # ax.barh(np.arange(len(top_authors)), top_authors['Publications'])
-    # ax.set_yticks(np.arange(len(top_authors.index)))
-    # ax.set_yticklabels(tuple(top_authors.index))
-    # ax.invert_yaxis()
-    # ax.set_title('Top 10 authors')
-    # ax.set_xlabel('Number of publications')
-    # plt.tight_layout()
-    # st.pyplot()
     st.bar_chart(top_authors, height=700)
 
 def plot_second_grade_analysis(cpAuth: pd.DataFrame, cpS: pd.DataFrame, cpP: pd.DataFrame) -> None:
@@ -108,13 +95,6 @@ def plot_second_grade_analysis(cpAuth: pd.DataFrame, cpS: pd.DataFrame, cpP: pd.
         Top 10 Authors by cites
     '''
     top_authors = cpAuth.sort_values(by=['Cites'], ascending=False).head(10)
-    # plt.barh(np.arange(len(top_authors)), top_authors['Cites'])
-    # plt.yticks(np.arange(len(top_authors)), top_authors.index)
-    # plt.gca().invert_yaxis()
-    # plt.title('Top 10 authors')
-    # plt.xlabel = 'Prueba'
-    # plt.tight_layout()
-    # st.pyplot()
     st.bar_chart(top_authors, height=700)
 
     st.subheader('Top 10 Sources by cited number')
@@ -122,12 +102,6 @@ def plot_second_grade_analysis(cpAuth: pd.DataFrame, cpS: pd.DataFrame, cpP: pd.
         Top 10 Sources by cites
     '''
     top_sources = cpS.sort_values(by=['Cites'], ascending=False).head(10)
-    # plt.barh(np.arange(len(top_sources)), top_sources['Cites'])
-    # plt.yticks(np.arange(len(top_sources)), top_sources.index)
-    # plt.gca().invert_yaxis()
-    # plt.title('Top 10 sources')
-    # # plt.xlabel('Cited times')
-    # st.pyplot()
     st.bar_chart(top_sources, height=700)
 
     st.subheader('Top 10 Papers by cited number')
@@ -135,12 +109,6 @@ def plot_second_grade_analysis(cpAuth: pd.DataFrame, cpS: pd.DataFrame, cpP: pd.
         Top 10 Papers by cites
     '''
     top_papers = cpP.sort_values(by=['Cites'], ascending=False).head(10)
-    # plt.barh(np.arange(len(top_papers)), top_papers['Cites'])
-    # plt.yticks(np.arange(len(top_papers)), top_papers.index)
-    # plt.gca().invert_yaxis()
-    # plt.title('Top 10 papers')
-    # # plt.xlabel('Cited times')
-    # st.pyplot()
     st.bar_chart(top_papers, height=700)
 
 def plot_third_grade_analysis(nSpAuth: pd.DataFrame, auth_kw: pd.DataFrame, idx_kw: pd.DataFrame) -> None:
@@ -149,12 +117,6 @@ def plot_third_grade_analysis(nSpAuth: pd.DataFrame, auth_kw: pd.DataFrame, idx_
     '''
     st.subheader('Top 10 Authors by number of Sources which cited them')
     top_authors = nSpAuth.sort_values(by=['Sources'], ascending=False).head(10)
-    # plt.barh(np.arange(len(top_authors)), top_authors['Sources'])
-    # plt.yticks(np.arange(len(top_authors)), top_authors.index)
-    # plt.gca().invert_yaxis()
-    # plt.title('Top 10 authors')
-    # # plt.xlabel('Cited times')
-    # st.pyplot()
     st.bar_chart(top_authors, height=700)
 
     '''
