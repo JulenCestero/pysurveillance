@@ -3,6 +3,7 @@ import requests
 import json
 import re
 from urllib.parse import quote
+import time
 
 with open('config.json', 'r') as f:
     API_KEY = json.load(f)
@@ -11,7 +12,7 @@ q = '"inverse reinforcement learning"  AND  ( "system"  OR  "e-learning"  OR  "s
 
 class scopus_df:
     def __init__(self):
-        self.columns = ['Authors', 'Title', 'Year', 'Cited By', 'Affiliations', 'Author Keywords', 'Source title']
+        self.columns = ['Authors', 'Title', 'Year', 'Cited by', 'Affiliations', 'Author Keywords', 'Source title']
         self.csv = pd.DataFrame(columns=self.columns)
 
     def get_authors(self, publication: dict) -> list:
@@ -64,15 +65,19 @@ def check_query(query: str = q) -> int:
     return int(query_to_scopus(url, query_parsed, api)['search-results']['opensearch:totalResults'])
 
 def get_csv(num_items: int, query: str = q) -> pd.DataFrame():
-    query_parsed = f'TITLE-ABS-KEY({query})'
+    query_parsed = f'TITLE-ABS-KEY({query}) AND  PUBYEAR  >  2009'
     api = API_KEY['api-key']
     return create_df_from_scopus(url, query_parsed, api, num_items)
 
 def main():
-    num_items = check_query()
+    query = input('Introduce query: ')
+    num_items = check_query(query)
     action = input(f'The query returned {num_items} results. Do you want to continue? [y/n] ')
     if 'y' in action or 'Y' in action:
-        return get_csv(num_items)
+        csv = get_csv(num_items, query)
+        ts = int(time.time())
+        csv.to_csv(f'sample_data/{ts}.csv')
+        print(f'Data saved to {ts}.csv')
     else:
         print('Aborting...')
 
