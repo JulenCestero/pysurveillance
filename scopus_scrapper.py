@@ -4,6 +4,7 @@ import json
 import re
 from urllib.parse import quote
 import time
+import progressbar
 
 with open('config.json', 'r') as f:
     API_KEY = json.load(f)
@@ -24,12 +25,18 @@ class scopus_df:
     def append(self, publication: dict) -> None:
         try:
             authors = ','.join(self.get_authors(publication))
+            title = publication['dc:title']
+            year = re.findall(r'([\d]{4})', publication['prism:coverDisplayDate'])[0]
         except KeyError as e:
             return None
-        title = publication['dc:title']
-        year = re.findall(r'([\d]{4})', publication['prism:coverDisplayDate'])[0]
-        source_title = publication['prism:publicationName']
-        cites = publication['citedby-count']
+        try:
+            source_title = publication['prism:publicationName']
+        except KeyError as e:
+            source_title = ''
+        try:
+            cites = publication['citedby-count']
+        except KeyError as e:
+            cites = 0
         try:
             affiliations = ','.join(self.get_affiliations(publication))
         except KeyError as e:
@@ -48,15 +55,17 @@ def create_df_from_scopus(url: str, query: str, api: str, num_items: int) -> pd.
     assert num_items > 0
     start_item = 0
     publications = scopus_df()
-    while start_item < num_items:
-        response = query_to_scopus(url, query, api, start_item)
-        try:
-            batch = response['search-results']['entry']
-        except KeyError as e:
-            break
-        for item in batch:
-            publications.append(item)
-            start_item += 1
+    with progressbar.ProgressBar(max_value=num_items) as bar:
+        while start_item < num_items:
+            response = query_to_scopus(url, query, api, start_item)
+            try:
+                batch = response['search-results']['entry']
+            except KeyError as e:
+                break
+            for item in batch:
+                publications.append(item)
+                start_item += 1
+                bar.update(start_item)
     return publications.csv
     
 def check_query(query: str = q) -> int:
