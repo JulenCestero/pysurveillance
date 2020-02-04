@@ -27,15 +27,14 @@ def substringSieve(string_list):
 def init():
     st.title('Technological surveillance')
 
-def get_info_csv(file: str) -> Union[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def get_info_csv(file: str) -> Union[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     df = pd.read_csv(file).fillna(0)
     authors = substringSieve(list(set([ii.lstrip() for auth_block in df['Authors'] for ii in auth_block.split(',') if 'No author name' not in ii])))
     sources = set(df['Source title'])
     affiliations = set(df['Affiliations'])
     papers = set(df['Title'])
     author_keywords = df['Author Keywords']
-    index_keywords = df['Index Keywords']
-    return df, authors, sources, affiliations, papers, author_keywords, index_keywords
+    return df, authors, sources, affiliations, papers, author_keywords
 
 def first_grade_analysis(df: pd.DataFrame, authors: pd.DataFrame, affiliations: pd.DataFrame) -> Union[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     '''
@@ -111,7 +110,7 @@ def plot_second_grade_analysis(cpAuth: pd.DataFrame, cpS: pd.DataFrame, cpP: pd.
     top_papers = cpP.sort_values(by=['Cites'], ascending=False).head(10)
     st.bar_chart(top_papers, height=700)
 
-def plot_third_grade_analysis(nSpAuth: pd.DataFrame, auth_kw: pd.DataFrame, idx_kw: pd.DataFrame) -> None:
+def plot_third_grade_analysis(nSpAuth: pd.DataFrame, auth_kw: pd.DataFrame) -> None:
     '''
         Top 10 Authors by number of Sources which cited them
     '''
@@ -131,36 +130,12 @@ def plot_third_grade_analysis(nSpAuth: pd.DataFrame, auth_kw: pd.DataFrame, idx_
     plt.show()
     st.pyplot(height=700)
 
-    '''
-        Index keywords word cloud
-    '''
-    st.subheader('Index keywords word cloud')
-    idx_kw_str = idx_kw.to_csv(index=False)
-    wordcloud = WordCloud(width=800, height=400).generate(idx_kw_str)
-    plt.imshow(wordcloud, interpolation='bilinear')
-    plt.axis("off")
-    plt.tight_layout(pad=0)
-    plt.show()
-    st.pyplot(height=700)
-
-    '''
-        Merged keywords word cloud
-    '''
-    st.subheader('Merged key words word cloud')
-    merged_kw_str = f'{auth_kw_str}, {idx_kw_str}'
-    wordcloud = WordCloud(width=800, height=400).generate(merged_kw_str)
-    plt.imshow(wordcloud, interpolation='bilinear')
-    plt.axis("off")
-    plt.tight_layout(pad=0)
-    plt.show()
-    st.pyplot(height=700)
-
 
 def main():
     init()
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
     if uploaded_file is not None:
-        df, authors, sources, affiliations, papers, author_keywords, index_keywords = get_info_csv(uploaded_file)
+        df, authors, sources, affiliations, papers, author_keywords = get_info_csv(uploaded_file)
 
         st.header('1st grade analysis')
         first_ppY, first_ppAuth, first_ppAff = first_grade_analysis(df, authors, affiliations)
@@ -172,7 +147,7 @@ def main():
 
         st.header('3rd grade analysis')
         third_nSpAuth = third_grade_analysis(df, authors)
-        plot_third_grade_analysis(third_nSpAuth, author_keywords, index_keywords)
+        plot_third_grade_analysis(third_nSpAuth, author_keywords)
 
 if __name__ == "__main__":
     main()
