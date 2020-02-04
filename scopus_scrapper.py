@@ -65,7 +65,7 @@ def check_query(query: str = q) -> int:
     return int(query_to_scopus(url, query_parsed, api)['search-results']['opensearch:totalResults'])
 
 def get_csv(num_items: int, query: str = q) -> pd.DataFrame():
-    query_parsed = f'TITLE-ABS-KEY({query}) AND  PUBYEAR  >  2009'
+    query_parsed = f'TITLE-ABS-KEY({query})'
     api = API_KEY['api-key']
     return create_df_from_scopus(url, query_parsed, api, num_items)
 
