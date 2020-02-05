@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from typing import Union
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
+import scopus_scrapper as ss
+from io import StringIO
 
 def substringSieve(string_list):
     '''
@@ -29,6 +31,15 @@ def init():
 
 def get_info_csv(file: str) -> Union[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     df = pd.read_csv(file).fillna(0)
+    authors = substringSieve(list(set([ii.lstrip() for auth_block in df['Authors'] for ii in auth_block.split(',') if 'No author name' not in ii])))
+    sources = set(df['Source title'])
+    affiliations = set(df['Affiliations'])
+    papers = set(df['Title'])
+    author_keywords = df['Author Keywords']
+    return df, authors, sources, affiliations, papers, author_keywords
+
+def get_info_df(scrapped_data: pd.DataFrame) -> Union[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    df = pd.read_csv(StringIO(scrapped_data))
     authors = substringSieve(list(set([ii.lstrip() for auth_block in df['Authors'] for ii in auth_block.split(',') if 'No author name' not in ii])))
     sources = set(df['Source title'])
     affiliations = set(df['Affiliations'])
@@ -118,10 +129,10 @@ def plot_third_grade_analysis(nSpAuth: pd.DataFrame, auth_kw: pd.DataFrame) -> N
     top_authors = nSpAuth.sort_values(by=['Sources'], ascending=False).head(10)
     st.bar_chart(top_authors, height=700)
 
+    st.subheader('Author keywords word cloud')
     '''
         Author keywords word cloud
     '''
-    st.subheader('Author keywords word cloud')
     auth_kw_str = auth_kw.to_csv(index=False)
     wordcloud = WordCloud(width=800, height=400).generate(auth_kw_str)
     plt.imshow(wordcloud, interpolation='bilinear')
@@ -130,24 +141,40 @@ def plot_third_grade_analysis(nSpAuth: pd.DataFrame, auth_kw: pd.DataFrame) -> N
     plt.show()
     st.pyplot(height=700)
 
+def print_analysis(df, authors, sources, affiliations, papers, author_keywords) -> None:
+    st.header('1st grade analysis')
+    first_ppY, first_ppAuth, first_ppAff = first_grade_analysis(df, authors, affiliations)
+    plot_first_grade_analysis(first_ppY, first_ppAuth, first_ppAff)
+
+    st.header('2nd grade analysis')
+    second_cpAuth, second_cpS, second_cpP = second_grade_analysis(df, authors, sources, papers)
+    plot_second_grade_analysis(second_cpAuth, second_cpS, second_cpP)
+
+    st.header('3rd grade analysis')
+    third_nSpAuth = third_grade_analysis(df, authors)
+    plot_third_grade_analysis(third_nSpAuth, author_keywords)
 
 def main():
     init()
-    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+    scrapped_data = None
+    uploaded_file = st.sidebar.file_uploader("Choose a CSV file", type="csv")
+    query = st.sidebar.text_area('Scopus query')
+    if not (query is None or query == ''):
+        num_items = ss.check_query(query)
+        str_num_items = st.sidebar.empty()
+        str_num_items.markdown(f'**{num_items}** results')
+        st.sidebar.markdown('Analyze them?')
+        if st.sidebar.button('Start'):
+            with st.spinner('Scrapping data from Scopus. Please wait...'):
+                scrapped_data = ss.get_csv(num_items, query)
+            st.success('Done')
+            str_num_items.markdown(f'Showing **{len(scrapped_data)}** results')
     if uploaded_file is not None:
         df, authors, sources, affiliations, papers, author_keywords = get_info_csv(uploaded_file)
-
-        st.header('1st grade analysis')
-        first_ppY, first_ppAuth, first_ppAff = first_grade_analysis(df, authors, affiliations)
-        plot_first_grade_analysis(first_ppY, first_ppAuth, first_ppAff)
-
-        st.header('2nd grade analysis')
-        second_cpAuth, second_cpS, second_cpP = second_grade_analysis(df, authors, sources, papers)
-        plot_second_grade_analysis(second_cpAuth, second_cpS, second_cpP)
-
-        st.header('3rd grade analysis')
-        third_nSpAuth = third_grade_analysis(df, authors)
-        plot_third_grade_analysis(third_nSpAuth, author_keywords)
+        print_analysis(df, authors, sources, affiliations, papers, author_keywords)        
+    if scrapped_data is not None:
+        df, authors, sources, affiliations, papers, author_keywords = get_info_df(scrapped_data.to_csv())
+        print_analysis(df, authors, sources, affiliations, papers, author_keywords)
 
 if __name__ == "__main__":
     main()
