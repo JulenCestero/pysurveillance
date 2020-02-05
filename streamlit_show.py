@@ -7,6 +7,8 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import scopus_scrapper as ss
 from io import StringIO
+import pickle as pkl
+import hashlib
 
 def substringSieve(string_list):
     '''
@@ -97,7 +99,7 @@ def plot_first_grade_analysis(ppY: pd.DataFrame, ppAuth: pd.DataFrame, ppAff: pd
     '''
     # fig, ax = plt.subplots()
     top_authors = ppAuth.sort_values(by=['Publications'], ascending=False).head(10)
-    st.bar_chart(top_authors, height=700)
+    st.bar_chart(top_authors, height=400)
 
 def plot_second_grade_analysis(cpAuth: pd.DataFrame, cpS: pd.DataFrame, cpP: pd.DataFrame) -> None:
     st.subheader('Top 10 Author by cited number')
@@ -105,21 +107,21 @@ def plot_second_grade_analysis(cpAuth: pd.DataFrame, cpS: pd.DataFrame, cpP: pd.
         Top 10 Authors by cites
     '''
     top_authors = cpAuth.sort_values(by=['Cites'], ascending=False).head(10)
-    st.bar_chart(top_authors, height=700)
+    st.bar_chart(top_authors, height=400)
 
     st.subheader('Top 10 Sources by cited number')
     '''
         Top 10 Sources by cites
     '''
     top_sources = cpS.sort_values(by=['Cites'], ascending=False).head(10)
-    st.bar_chart(top_sources, height=700)
+    st.bar_chart(top_sources, height=400)
 
     st.subheader('Top 10 Papers by cited number')
     '''
         Top 10 Papers by cites
     '''
     top_papers = cpP.sort_values(by=['Cites'], ascending=False).head(10)
-    st.bar_chart(top_papers, height=700)
+    st.bar_chart(top_papers, height=400)
 
 def plot_third_grade_analysis(nSpAuth: pd.DataFrame, auth_kw: pd.DataFrame) -> None:
     '''
@@ -127,7 +129,7 @@ def plot_third_grade_analysis(nSpAuth: pd.DataFrame, auth_kw: pd.DataFrame) -> N
     '''
     st.subheader('Top 10 Authors by number of Sources which cited them')
     top_authors = nSpAuth.sort_values(by=['Sources'], ascending=False).head(10)
-    st.bar_chart(top_authors, height=700)
+    st.bar_chart(top_authors, height=400)
 
     st.subheader('Author keywords word cloud')
     '''
@@ -139,42 +141,63 @@ def plot_third_grade_analysis(nSpAuth: pd.DataFrame, auth_kw: pd.DataFrame) -> N
     plt.axis("off")
     plt.tight_layout(pad=0)
     plt.show()
-    st.pyplot(height=700)
+    st.pyplot(height=600)
 
-def print_analysis(df, authors, sources, affiliations, papers, author_keywords) -> None:
+def print_analysis(df, authors, sources, affiliations, papers, author_keywords, years) -> None:
     st.header('1st grade analysis')
-    first_ppY, first_ppAuth, first_ppAff = first_grade_analysis(df, authors, affiliations)
+    first_ppY, first_ppAuth, first_ppAff = first_grade_analysis(df.query(f'(Year >= {years[0]}) & (Year <= {years[1]})'), authors, affiliations)
     plot_first_grade_analysis(first_ppY, first_ppAuth, first_ppAff)
 
     st.header('2nd grade analysis')
-    second_cpAuth, second_cpS, second_cpP = second_grade_analysis(df, authors, sources, papers)
+    second_cpAuth, second_cpS, second_cpP = second_grade_analysis(df.query(f'(Year >= {years[0]}) & (Year <= {years[1]})'), authors, sources, papers)
     plot_second_grade_analysis(second_cpAuth, second_cpS, second_cpP)
 
     st.header('3rd grade analysis')
-    third_nSpAuth = third_grade_analysis(df, authors)
+    third_nSpAuth = third_grade_analysis(df.query(f'(Year >= {years[0]}) & (Year <= {years[1]})'), authors)
     plot_third_grade_analysis(third_nSpAuth, author_keywords)
+
+@st.cache
+def load_scrapped_data(query):
+    with open(f'queries/{hashlib.sha1(query.encode()).hexdigest()}.pkl', 'rb') as f:
+        return pkl.load(f)
 
 def main():
     init()
-    scrapped_data = None
     uploaded_file = st.sidebar.file_uploader("Choose a CSV file", type="csv")
     query = st.sidebar.text_area('Scopus query')
+    try:
+        scrapped_data = load_scrapped_data(query)
+    except:
+        scrapped_data = None
+    str_num_items = st.sidebar.empty()
     if not (query is None or query == ''):
-        num_items = ss.check_query(query)
-        str_num_items = st.sidebar.empty()
+        try:
+            num_items = ss.check_query(query)
+        except:
+            st.warning('No results found')
+            return
         str_num_items.markdown(f'**{num_items}** results')
         st.sidebar.markdown('Analyze them?')
         if st.sidebar.button('Start'):
             with st.spinner('Scrapping data from Scopus. Please wait...'):
-                scrapped_data = ss.get_csv(num_items, query)
+                try:
+                    scrapped_data = ss.get_csv(num_items, query)
+                except:
+                    st.warning('No results found')
+                with open(f'queries/{hashlib.sha1(query.encode()).hexdigest()}.pkl', 'wb') as f:
+                    pkl.dump(scrapped_data, f)
             st.success('Done')
+        if scrapped_data is not None:
             str_num_items.markdown(f'Showing **{len(scrapped_data)}** results')
+            list_years = [int(year) for year in set(scrapped_data['Year'])]
+            years = st.sidebar.slider('Years', min(list_years), max(list_years), (min(list_years), max(list_years)))
     if uploaded_file is not None:
         df, authors, sources, affiliations, papers, author_keywords = get_info_csv(uploaded_file)
-        print_analysis(df, authors, sources, affiliations, papers, author_keywords)        
+        print_analysis(df, authors, sources, affiliations, papers, author_keywords, years)        
     if scrapped_data is not None:
         df, authors, sources, affiliations, papers, author_keywords = get_info_df(scrapped_data.to_csv())
-        print_analysis(df, authors, sources, affiliations, papers, author_keywords)
+        str_num_items.markdown(f'Showing **{len(df.query(f"(Year >= {years[0]}) & (Year <= {years[1]})"))}** results')
+        print_analysis(df, authors, sources, affiliations, papers, author_keywords, years)
 
 if __name__ == "__main__":
     main()
