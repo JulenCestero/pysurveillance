@@ -1,3 +1,4 @@
 scopus.txt
 venv/*
 config.json
+*.pyc
