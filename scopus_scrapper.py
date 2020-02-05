@@ -5,6 +5,7 @@ import re
 from urllib.parse import quote
 import time
 import progressbar
+import streamlit as st
 
 with open('config.json', 'r') as f:
     API_KEY = json.load(f)
@@ -67,12 +68,14 @@ def create_df_from_scopus(url: str, query: str, api: str, num_items: int) -> pd.
                 start_item += 1
                 bar.update(start_item)
     return publications.csv
-    
+
+@st.cache
 def check_query(query: str = q) -> int:
     query_parsed = f'TITLE-ABS-KEY({query})' # TODO: Save a history of all the querys with the number of results
     api = API_KEY['api-key']
     return int(query_to_scopus(url, query_parsed, api)['search-results']['opensearch:totalResults'])
 
+@st.cache
 def get_csv(num_items: int, query: str = q) -> pd.DataFrame():
     query_parsed = f'TITLE-ABS-KEY({query})'
     api = API_KEY['api-key']
