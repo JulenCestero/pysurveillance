@@ -187,14 +187,15 @@ def main():
                 with open(f'queries/{hashlib.sha1(query.encode()).hexdigest()}.pkl', 'wb') as f:
                     pkl.dump(scrapped_data, f)
             st.success('Done')
-        if scrapped_data is not None:
-            str_num_items.markdown(f'Showing **{len(scrapped_data)}** results')
-            list_years = [int(year) for year in set(scrapped_data['Year'])]
-            years = st.sidebar.slider('Years', min(list_years), max(list_years), (min(list_years), max(list_years)))
     if uploaded_file is not None:
         df, authors, sources, affiliations, papers, author_keywords = get_info_csv(uploaded_file)
+        list_years = [int(year) for year in set(df['Year'])]
+        years = st.sidebar.slider('Years', min(list_years), max(list_years), (min(list_years), max(list_years)))
+        str_num_items.markdown(f'Showing **{len(df.query(f"(Year >= {years[0]}) & (Year <= {years[1]})"))}** results')
         print_analysis(df, authors, sources, affiliations, papers, author_keywords, years)        
     if scrapped_data is not None:
+        list_years = [int(year) for year in set(scrapped_data['Year'])]
+        years = st.sidebar.slider('Years', min(list_years), max(list_years), (min(list_years), max(list_years)))
         df, authors, sources, affiliations, papers, author_keywords = get_info_df(scrapped_data.to_csv())
         str_num_items.markdown(f'Showing **{len(df.query(f"(Year >= {years[0]}) & (Year <= {years[1]})"))}** results')
         print_analysis(df, authors, sources, affiliations, papers, author_keywords, years)
