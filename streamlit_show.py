@@ -31,6 +31,7 @@ def substringSieve(string_list):
 def init():
     st.title('Technological surveillance')
 
+@st.cache
 def get_info_csv(file: str) -> Union[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     df = pd.read_csv(file).fillna(0)
     authors = substringSieve(list(set([ii.lstrip() for auth_block in df['Authors'] for ii in auth_block.split(',') if 'No author name' not in ii])))
@@ -40,6 +41,7 @@ def get_info_csv(file: str) -> Union[pd.DataFrame, pd.DataFrame, pd.DataFrame, p
     author_keywords = df['Author Keywords']
     return df, authors, sources, affiliations, papers, author_keywords
 
+@st.cache
 def get_info_df(scrapped_data: pd.DataFrame) -> Union[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     df = pd.read_csv(StringIO(scrapped_data))
     authors = substringSieve(list(set([ii.lstrip() for auth_block in df['Authors'] for ii in auth_block.split(',') if 'No author name' not in ii])))
@@ -69,9 +71,9 @@ def second_grade_analysis(df: pd.DataFrame, authors: pd.DataFrame, sources: pd.D
     '''
         Processing data
     '''
-    cites_per_author = pd.DataFrame(data={author: [df[df['Authors'].str.contains(author)]['Cited by'].sum()] for author in authors}).T
+    cites_per_author = pd.DataFrame(data={author: [df[df['Authors'].str.contains(author, na=False)]['Cited by'].sum()] for author in authors}).T
     cites_per_author.columns = ['Cites']
-    cites_per_source = pd.DataFrame(data={source: [df[df['Source title'].str.contains(source)]['Cited by'].sum()] for source in sources}).T
+    cites_per_source = pd.DataFrame(data={source: [df[df['Source title'].str.contains(source, na=False)]['Cited by'].sum()] for source in sources if type(source) == str}).T
     cites_per_source.columns = ['Cites']
     cites_per_paper = pd.DataFrame(data={paper: [df[df['Title'] == paper]['Cited by'].sum()] for paper in papers}).T
     cites_per_paper.columns = ['Cites']
@@ -81,7 +83,7 @@ def third_grade_analysis(df: pd.DataFrame, authors: pd.DataFrame) -> pd.DataFram
     '''
         Authors per source per cites
     '''
-    sources_per_author = pd.DataFrame(data={author: [df[df['Authors'].str.contains(author)]['Source title']] for author in authors})
+    sources_per_author = pd.DataFrame(data={author: [df[df['Authors'].str.contains(author, na=False)]['Source title']] for author in authors})
     num_sources_per_author = pd.DataFrame(data={author: [len(sources_per_author[author][0])] for author in authors}).T
     num_sources_per_author.columns = ['Sources']
     return num_sources_per_author
@@ -149,7 +151,7 @@ def print_analysis(df, authors, sources, affiliations, papers, author_keywords, 
     plot_first_grade_analysis(first_ppY, first_ppAuth, first_ppAff)
 
     st.header('2nd grade analysis')
-    second_cpAuth, second_cpS, second_cpP = second_grade_analysis(df.query(f'(Year >= {years[0]}) & (Year <= {years[1]})'), authors, sources, papers)
+    second_cpAuth, second_cpS, second_cpP = second_grade_analysis(df.query(f'(Year >= {int(years[0])}) & (Year <= {int(years[1])})'), authors, sources, papers)
     plot_second_grade_analysis(second_cpAuth, second_cpS, second_cpP)
 
     st.header('3rd grade analysis')
@@ -182,7 +184,7 @@ def main():
             with st.spinner('Scrapping data from Scopus. Please wait...'):
                 try:
                     scrapped_data = ss.get_csv(num_items, query)
-                except:
+                except Exception as e:
                     st.warning('No results found')
                 with open(f'queries/{hashlib.sha1(query.encode()).hexdigest()}.pkl', 'wb') as f:
                     pkl.dump(scrapped_data, f)

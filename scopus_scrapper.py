@@ -28,7 +28,7 @@ class scopus_df:
             authors = ','.join(self.get_authors(publication))
             title = publication['dc:title']
             year = re.findall(r'([\d]{4})', publication['prism:coverDisplayDate'])[0]
-        except KeyError as e:
+        except Exception as e:
             return None
         try:
             source_title = publication['prism:publicationName']
