@@ -38,7 +38,7 @@ streamlit run streamlit_show.py
 
 ## Usage
 
-There are two methods of analyzing the data: getting a `csv` file from Scopus and searching the results from the streamlit interface.
+There are two methods of analyzing the data: getting a *csv* file from Scopus and searching the results from the streamlit interface.
 
 ### Importing the csv from a Scopus export
 
