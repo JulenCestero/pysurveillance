@@ -167,11 +167,11 @@ def main():
     init()
     uploaded_file = st.sidebar.file_uploader("Choose a CSV file", type="csv")
     query = st.sidebar.text_area('Scopus query')
+    str_num_items = st.sidebar.empty()
     try:
         scrapped_data = load_scrapped_data(query)
     except:
         scrapped_data = None
-    str_num_items = st.sidebar.empty()
     if not (query is None or query == ''):
         try:
             num_items = ss.check_query(query)
