@@ -36,6 +36,19 @@ pip install -r requirements.txt
 streamlit run streamlit_show.py
 ```
 
+## Docker
+
+Build the project image:
+
+```bash
+docker build --tag py-surveillance:<tag> .
+```
+
+To run the project:
+```bash
+docker run --publish 8501:8501 --detach --name py-surveillance py-surveillance:<tag>
+```
+
 ## Usage
 
 There are two methods of analyzing the data: getting a *csv* file from Scopus and searching the results from the streamlit interface.
