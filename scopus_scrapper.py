@@ -1,16 +1,20 @@
-import pandas as pd
-import requests
+import csv
 import json
 import re
-from urllib.parse import quote
 import time
+
+import pandas as pd
 import progressbar
+import requests
 import streamlit as st
+from bs4 import BeautifulSoup
 
 with open('config.json', 'r') as f:
     API_KEY = json.load(f)
 url = 'https://api.elsevier.com/content/search/scopus'
 q = '"inverse reinforcement learning"  AND  ( "system"  OR  "e-learning"  OR  "stochastic"  OR  "smart grids"  OR  "control"  OR  "system controller"  OR  "control tuning"  OR  "optimization")'
+scimago_url = 'https://www.scimagojr.com/journalrank.php'
+
 
 class scopus_df:
     def __init__(self):
@@ -46,12 +50,47 @@ class scopus_df:
             author_kw = ','.join([ii.lstrip().strip() for ii in publication['authkeywords'].split('|')])
         except KeyError as e:
             author_kw = ''
-        self.csv = self.csv.append(pd.DataFrame([[authors, title, year, cites, affiliations, author_kw, source_title]], columns=self.columns), ignore_index=True)
+        self.csv = self.csv.append(
+            pd.DataFrame([[authors, title, year, cites, affiliations, author_kw, source_title]], columns=self.columns),
+            ignore_index=True)
+
 
 def query_to_scopus(url: str, query: str, api: str, start_item: int = 0) -> list:
     return requests.get(url,
                         headers={'Accept': 'application/json', 'X-ELS-APIKey': api},
                         params={'query': query, 'view': 'COMPLETE', 'start': start_item}).json()
+
+
+def get_years_scimago():
+    years = []
+    r = requests.get(scimago_url)
+    soup = BeautifulSoup(r.text, 'html.parser')
+    test = soup.find_all('div', class_='dropdown').__getitem__(4)
+    for li in test.contents.__getitem__(3).findAll('li'):
+        years.append(li.text)
+    return years
+
+
+def download_scimago_data(years: list):
+    ##for year in years:
+    year = 2018
+    scimago_url = 'https://www.scimagojr.com/journalrank.php?year=%s&out=xls' % year
+    response = requests.get(scimago_url).content
+    open('scimago/%s.csv' % year, 'wb').write(response)
+    print(year)
+
+
+def process_scimago_file(file: str, journal: str):
+    try:
+        with open('scimago/%s.csv' % file) as f:
+            r = csv.reader(f, delimiter=';')
+            for row in r:
+                if journal in row[2]:
+                    return row[18]
+    except:
+        return None
+
+
 def create_df_from_scopus(url: str, query: str, api: str, num_items: int) -> pd.DataFrame():
     assert num_items > 0
     start_item = 0
@@ -69,17 +108,20 @@ def create_df_from_scopus(url: str, query: str, api: str, num_items: int) -> pd.
                 bar.update(start_item)
     return publications.csv
 
+
 @st.cache
 def check_query(query: str = q) -> int:
-    query_parsed = f'TITLE-ABS-KEY({query})' # TODO: Save a history of all the querys with the number of results
+    query_parsed = f'{query}'  # TODO: Save a history of all the querys with the number of results
     api = API_KEY['api-key']
     return int(query_to_scopus(url, query_parsed, api)['search-results']['opensearch:totalResults'])
 
+
 @st.cache
 def get_csv(num_items: int, query: str = q) -> pd.DataFrame():
-    query_parsed = f'TITLE-ABS-KEY({query})'
+    query_parsed = f'{query}'
     api = API_KEY['api-key']
     return create_df_from_scopus(url, query_parsed, api, num_items)
+
 
 def main():
     query = input('Introduce query: ')
@@ -92,6 +134,7 @@ def main():
         print(f'Data saved to {ts}.csv')
     else:
         print('Aborting...')
+
 
 if __name__ == '__main__':
     main()
