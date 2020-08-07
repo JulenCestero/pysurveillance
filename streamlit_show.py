@@ -272,9 +272,9 @@ def main():
     if scrapped_data is not None:
         st.sidebar.markdown('**Scimago data available from**')
         st.sidebar.markdown('%s **to** %s' % (years[-1], years[0]))
-        scimago_avaliable2 = st.sidebar.checkbox('Scimago and Scopus available')
+        scimago_avaliable = st.sidebar.checkbox('Scimago and Scopus available')
         scimago_years=[]
-        if(scimago_avaliable2):
+        if(scimago_avaliable):
             scimago_years = years
         list_years = [int(year) for year in set(scrapped_data['Year'])]
         years = st.sidebar.slider('Years', min(list_years), max(list_years), (min(list_years), max(list_years)))
