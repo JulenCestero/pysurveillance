@@ -42,6 +42,8 @@ Finalmente, en esta sección comentaré la investigación sobre los posibles jou
 
 Se puede observar que en ambas imágenes, hay un journal que aparece destacado como el más citado. Este journal es [Information and Software Technology](https://www.editorialmanager.com/INFSOF/default.aspx), y creo que debería ser el primero en el que intentemos publicar. El resto de journals se salen del campo de estudio, siendo éstos de ámbitos médicos o empresariales, más que de software. Por tanto, este journal sería, desde mi punto de vista, el principal journal al que deberíamos apuntar.
 
+http://www.guide2research.com/conference/ease-2020
+
 
 
 
