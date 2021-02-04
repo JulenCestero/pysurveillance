@@ -1,5 +1,7 @@
 # pysurveillance
 
+![logo](demo/logo.png)
+
 ## Installation
 
 - Clone the repository
