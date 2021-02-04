@@ -1,6 +1,6 @@
 # pysurveillance
 
-![logo](demo/logo.png)
+<center>![logo](demo/logo.png)</center>
 
 ## Installation
 
