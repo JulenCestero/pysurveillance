@@ -281,7 +281,7 @@ def main():
         df, authors, sources, affiliations, papers, author_keywords = get_info_df(scrapped_data.to_csv())
         str_num_items.markdown(f'Showing **{len(df.query(f"(Year >= {years[0]}) & (Year <= {years[1]})"))}** results')
         st.markdown(f'Showing **{len(df.query(f"(Year >= {years[0]}) & (Year <= {years[1]})"))}** results')
-        print_analysis(df, authors, sources, affiliations, papers, author_keywords, years, scimago_years, scimago_avaliable2)
+        print_analysis(df, authors, sources, affiliations, papers, author_keywords, years, scimago_years, scimago_avaliable)
 
 
 if __name__ == "__main__":
