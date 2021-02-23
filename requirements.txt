@@ -8,3 +8,4 @@ streamlit==0.53.0
 wordcloud==1.6.0
 progressbar2==3.47.0
 beautifulsoup4==4.9.0
+stqdm

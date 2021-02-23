@@ -8,6 +8,7 @@ import progressbar
 import requests
 import streamlit as st
 from bs4 import BeautifulSoup
+from stqdm import stqdm
 
 with open('config.json', 'r') as f:
     API_KEY = json.load(f)
@@ -95,7 +96,7 @@ def create_df_from_scopus(url: str, query: str, api: str, num_items: int) -> pd.
     assert num_items > 0
     start_item = 0
     publications = scopus_df()
-    with progressbar.ProgressBar(max_value=num_items) as bar:
+    with stqdm(total=num_items) as bar:
         while start_item < num_items:
             response = query_to_scopus(url, query, api, start_item)
             try:
@@ -105,7 +106,7 @@ def create_df_from_scopus(url: str, query: str, api: str, num_items: int) -> pd.
             for item in batch:
                 publications.append(item)
                 start_item += 1
-                bar.update(start_item)
+                bar.update(1)
     return publications.csv
 
 
@@ -116,7 +117,7 @@ def check_query(query: str = q) -> int:
     return int(query_to_scopus(url, query_parsed, api)['search-results']['opensearch:totalResults'])
 
 
-@st.cache
+@st.cache(suppress_st_warning=True) 
 def get_csv(num_items: int, query: str = q) -> pd.DataFrame():
     query_parsed = f'{query}'
     api = API_KEY['api-key']
