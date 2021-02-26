@@ -106,8 +106,7 @@ def third_grade_analysis(df: pd.DataFrame, authors: pd.DataFrame) -> pd.DataFram
     return num_sources_per_author
 
 
-def fourth_grade_analysis(df: pd.DataFrame, papers: pd.DataFrame) -> \
-        Union[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def fourth_grade_analysis(df: pd.DataFrame, papers: pd.DataFrame) -> pd.DataFrame:
     for paper in papers:
         if len(df[df['Title'] == paper]['Year'].values) == 0 or len(df[df['Title'] == paper]['Year'].values) == 0:
             return None
