@@ -1,0 +1,20 @@
+version: "3"
+services:
+  pysurveillance:
+    container_name: "pysurveillance"
+    build: .
+    # ports:
+      # 8080:8080
+    networks:
+      - traefik
+    expose:
+      - 8080
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pysurveillance.rule=Host(`pysurveillance.192-168-30-101.nip.io`)"
+    restart: unless-stopped
+
+networks:
+  traefik:
+    external:
+      name: traefik

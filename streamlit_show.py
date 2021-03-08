@@ -230,7 +230,7 @@ def load_scrapped_data(query):
 
 def main():
     init()
-    years = ss.get_years_scimago()
+    # years = ss.get_years_scimago()
     uploaded_file = st.sidebar.file_uploader("Choose a CSV file", type="csv")
     query = st.sidebar.text_area('Scopus query')
     try:
@@ -256,12 +256,12 @@ def main():
                     pkl.dump(scrapped_data, f)
             st.success('Done')
     if uploaded_file is not None:
-        st.sidebar.markdown('**Scimago data available from**')
-        st.sidebar.markdown('%s **to** %s' % (years[-1], years[0]))
+        # st.sidebar.markdown('**Scimago data available from**')
+        # st.sidebar.markdown('%s **to** %s' % (years[-1], years[0]))
         scimago_avaliable = st.sidebar.checkbox('Scimago available')
         scimago_years=[]
-        if(scimago_avaliable):
-            scimago_years = years
+        # if(scimago_avaliable):
+            # scimago_years = years
         df, authors, sources, affiliations, papers, author_keywords = get_info_csv(uploaded_file)
         list_years = [int(year) for year in set(df['Year'])]
         years = st.sidebar.slider('Years', min(list_years), max(list_years), (min(list_years), max(list_years)))
@@ -269,12 +269,12 @@ def main():
         st.markdown(f'Showing **{len(df.query(f"(Year >= {years[0]}) & (Year <= {years[1]})"))}** results')
         print_analysis(df, authors, sources, affiliations, papers, author_keywords, years, scimago_years, scimago_avaliable)
     if scrapped_data is not None:
-        st.sidebar.markdown('**Scimago data available from**')
-        st.sidebar.markdown('%s **to** %s' % (years[-1], years[0]))
+        # st.sidebar.markdown('**Scimago data available from**')
+        # st.sidebar.markdown('%s **to** %s' % (years[-1], years[0]))
         scimago_avaliable = st.sidebar.checkbox('Scimago and Scopus available')
         scimago_years=[]
-        if(scimago_avaliable):
-            scimago_years = years
+        # if(scimago_avaliable):
+            # scimago_years = years
         list_years = [int(year) for year in set(scrapped_data['Year'])]
         years = st.sidebar.slider('Years', min(list_years), max(list_years), (min(list_years), max(list_years)))
         df, authors, sources, affiliations, papers, author_keywords = get_info_df(scrapped_data.to_csv())
