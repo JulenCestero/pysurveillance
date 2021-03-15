@@ -4,7 +4,7 @@ import re
 import time
 
 import pandas as pd
-import progressbar
+# import progressbar
 import requests
 import streamlit as st
 from bs4 import BeautifulSoup
