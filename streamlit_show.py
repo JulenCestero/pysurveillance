@@ -234,10 +234,12 @@ def plot_fourth_grade_analysis(scimago: pd.DataFrame, scimago_years: list, scima
 
 
 def print_analysis(
-    df, authors, sources, affiliations, papers, author_keywords, years, scimago_years, scimago_avaliable
+    df_pre, authors, sources, affiliations, papers, author_keywords, years, scimago_years, scimago_avaliable
 ) -> None:
     st.header("1st grade analysis")
+    title = st.sidebar.text_area("Filter titles")
     authors = clean_authors(authors)
+    df = df_pre[df_pre["Title"].str.contains(title, flags=re.IGNORECASE, na=False)]
     first_ppY, first_ppAuth, first_ppAff = first_grade_analysis(
         df.query(f"(Year >= {years[0]}) & (Year <= {years[1]})"), authors, affiliations
     )
