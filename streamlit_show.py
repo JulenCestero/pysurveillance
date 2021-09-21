@@ -237,7 +237,7 @@ def print_analysis(
     df, authors, sources, affiliations, papers, author_keywords, years, scimago_years, scimago_avaliable
 ) -> None:
     st.header("1st grade analysis")
-
+    authors = clean_authors(authors)
     first_ppY, first_ppAuth, first_ppAff = first_grade_analysis(
         df.query(f"(Year >= {years[0]}) & (Year <= {years[1]})"), authors, affiliations
     )
@@ -266,6 +266,11 @@ def print_analysis(
 def load_scrapped_data(query):
     with open(f"queries/{hashlib.sha1(query.encode()).hexdigest()}.pkl", "rb") as f:
         return pkl.load(f)
+
+
+def clean_authors(authors: list) -> list:
+    pattern = r"[()]"
+    return [author for author in authors if not re.findall(pattern, author)]
 
 
 def main():
