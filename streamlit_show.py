@@ -244,9 +244,6 @@ def print_analysis(
     plot_first_grade_analysis(first_ppY, first_ppAuth, first_ppAff)
 
     st.header("2nd grade analysis")
-    import pdb
-
-    pdb.set_trace()
     second_cpAuth, second_cpS, second_cpP = second_grade_analysis(
         df.query(f"(Year >= {int(years[0])}) & (Year <= {int(years[1])})"), authors, sources, papers
     )
