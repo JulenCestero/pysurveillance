@@ -2,7 +2,7 @@ altair
 requests==2.25.1 
 # progressbar
 matplotlib==3.1.2
-pandas==0.25.3
+pandas
 numpy==1.18.1
 streamlit
 wordcloud==1.6.0

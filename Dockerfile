@@ -1,7 +1,8 @@
-FROM python:3.7-slim
+FROM python:3.8-slim-buster
 
+RUN apt update && apt install gcc -y
 ADD requirements.txt /requirements.txt
-RUN pip install --use-deprecated=legacy-resolver -r /requirements.txt
+RUN pip install -r /requirements.txt
 
 ADD . /py-surveillance
 WORKDIR /py-surveillance/
