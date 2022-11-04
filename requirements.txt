@@ -1,12 +1,12 @@
+numpy
 altair
 requests==2.25.1 
 # progressbar
 matplotlib==3.1.2
 pandas
-numpy==1.18.1
 streamlit
-wordcloud==1.6.0
-progressbar2==3.47.0
-beautifulsoup4==4.9.0
-pyarrow==2.0
+wordcloud
+progressbar2
+beautifulsoup4
+pyarrow
 stqdm

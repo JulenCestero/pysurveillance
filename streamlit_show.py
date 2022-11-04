@@ -20,7 +20,7 @@ def substringSieve(string_list):
     string_list.sort(key=lambda s: len(s), reverse=True)
     out = []
     for s in string_list:
-        if not any([s in o for o in out]):
+        if all(s not in o for o in out):
             out.append(s)
     deleted_items = list(set(string_list) - set(out))
     for d in deleted_items:
@@ -33,15 +33,13 @@ def substringSieve(string_list):
 
 
 def init():
-    st.title("Technological surveillance")
-
+    st.title("Pysurveillance")
+    st.sidebar.image("demo/logo.png")
 
 @st.cache
 def get_info_csv(file: str) -> Union[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     df = pd.read_csv(file).fillna(0)
-    authors = substringSieve(
-        list(set([ii.lstrip() for auth_block in df["Authors"] for ii in auth_block.split(",") if "No author name" not in ii]))
-    )
+    authors = substringSieve(list({ii.lstrip() for auth_block in df["Authors"] for ii in auth_block.split(",") if "No author name" not in ii}))
     sources = set(df["Source title"])
     affiliations = set(df["Affiliations"])
     papers = set(df["Title"])
@@ -54,9 +52,8 @@ def get_info_df(
     scrapped_data: pd.DataFrame,
 ) -> Union[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     df = pd.read_csv(StringIO(scrapped_data))
-    authors = substringSieve(
-        list(set([ii.lstrip() for auth_block in df["Authors"] for ii in auth_block.split(",") if "No author name" not in ii]))
-    )
+    authors = substringSieve(list({ii.lstrip() for auth_block in df["Authors"] for ii in auth_block.split(",") if "No author name" not in ii}))
+
     sources = set(df["Source title"])
     affiliations = set(df["Affiliations"])
     papers = set(df["Title"])
@@ -128,7 +125,7 @@ def third_grade_analysis(df: pd.DataFrame, authors: pd.DataFrame) -> pd.DataFram
 
 def fourth_grade_analysis(df: pd.DataFrame, papers: pd.DataFrame) -> pd.DataFrame:
     for paper in papers:
-        if len(df[df["Title"] == paper]["Year"].values) == 0 or len(df[df["Title"] == paper]["Year"].values) == 0:
+        if len(df[df["Title"] == paper]["Year"].values) == 0:
             return None
     scimago_per_paper = pd.DataFrame(data={paper: [df[df["Title"] == paper]["Cited by"].sum()] for paper in papers}).T
     sources_per_paper = pd.DataFrame(data={paper: [df[df["Title"] == paper]["Source title"].values[0]] for paper in papers}).T
@@ -158,40 +155,20 @@ def plot_first_grade_analysis(ppY: pd.DataFrame, ppAuth: pd.DataFrame, ppAff: pd
 
 
 def plot_second_grade_analysis(cpAuth: pd.DataFrame, cpS: pd.DataFrame, cpP: pd.DataFrame) -> None:
-    st.subheader("Top 10 Author by cited number")
-    """
-        Top 10 Authors by cites
-    """
-    top_authors = cpAuth.sort_values(by=["Cites"], ascending=False).head(10)
-    st.bar_chart(top_authors, height=400)
-
-    st.subheader("Top 10 Sources by cited number")
-    """
-        Top 10 Sources by cites
-    """
-    top_sources = cpS.sort_values(by=["Cites"], ascending=False).head(10)
-    st.bar_chart(top_sources, height=400)
-
-    st.subheader("Top 10 Papers by cited number")
-    """
-        Top 10 Papers by cites
-    """
-    top_papers = cpP.sort_values(by=["Cites"], ascending=False).head(10)
-    st.bar_chart(top_papers, height=400)
+    headers = ["Top 10 Author by cited number", "Top 10 Sources by cited number", "Top 10 Papers by cited number"]
+    dfs = [cpAuth, cpS, cpP]
+    for header, df in zip(headers, dfs):
+        st.subheader(header)
+        tops = df.sort_values(by=["Cites"], ascending=False).head(10)
+        st.bar_chart(tops, height=400)
 
 
 def plot_third_grade_analysis(nSpAuth: pd.DataFrame, auth_kw: pd.DataFrame) -> None:
-    """
-    Top 10 Authors by number of Sources which cited them
-    """
     st.subheader("Top 10 Authors by number of Sources which cited them")
     top_authors = nSpAuth.sort_values(by=["Sources"], ascending=False).head(10)
     st.bar_chart(top_authors, height=400)
 
     st.subheader("Author keywords word cloud")
-    """
-        Author keywords word cloud
-    """
     auth_kw_str = auth_kw.to_csv(index=False)
     wordcloud = WordCloud(width=800, height=400).generate(auth_kw_str)
     plt.imshow(wordcloud, interpolation="bilinear")
@@ -204,10 +181,6 @@ def plot_third_grade_analysis(nSpAuth: pd.DataFrame, auth_kw: pd.DataFrame) -> N
 def plot_fourth_grade_analysis(scimago: pd.DataFrame, scimago_years: list, scimago_avaliable: bool) -> None:
     if scimago is not None:
         st.subheader("Top 10 Papers by cited number and scimago quartil")
-        """
-            Top 10 Papers by cites number and scimago quartil
-        """
-
         top_papers = scimago.sort_values(by=["Cites"], ascending=False).head(10)
 
         if scimago_avaliable:
@@ -279,13 +252,13 @@ def main():
     query = st.sidebar.text_area("Scopus query")
     try:
         scrapped_data = load_scrapped_data(query)
-    except:
+    except Exception:
         scrapped_data = None
     str_num_items = st.sidebar.empty()
-    if not (query is None or query == ""):
+    if query is not None and query != "":
         try:
             num_items = ss.check_query(query)
-        except:
+        except Exception:
             st.warning("No results found")
             return
         str_num_items.markdown(f"**{num_items}** results")
@@ -300,31 +273,31 @@ def main():
                     pkl.dump(scrapped_data, f)
             st.success("Done")
     if uploaded_file is not None:
-        # st.sidebar.markdown('**Scimago data available from**')
-        # st.sidebar.markdown('%s **to** %s' % (years[-1], years[0]))
-        scimago_avaliable = st.sidebar.checkbox("Scimago available")
-        scimago_years = []
-        # if(scimago_avaliable):
-        # scimago_years = years
-        df, authors, sources, affiliations, papers, author_keywords = get_info_csv(uploaded_file)
-        list_years = [int(year) for year in set(df["Year"])]
-        years = st.sidebar.slider("Years", min(list_years), max(list_years), (min(list_years), max(list_years)))
-        str_num_items.markdown(f'Showing **{len(df.query(f"(Year >= {years[0]}) & (Year <= {years[1]})"))}** results')
-        st.markdown(f'Showing **{len(df.query(f"(Year >= {years[0]}) & (Year <= {years[1]})"))}** results')
-        print_analysis(df, authors, sources, affiliations, papers, author_keywords, years, scimago_years, scimago_avaliable)
+        process_uploaded_file(uploaded_file, str_num_items)
     if scrapped_data is not None:
-        # st.sidebar.markdown('**Scimago data available from**')
-        # st.sidebar.markdown('%s **to** %s' % (years[-1], years[0]))
-        scimago_avaliable = st.sidebar.checkbox("Scimago and Scopus available")
-        scimago_years = []
-        # if(scimago_avaliable):
-        # scimago_years = years
-        list_years = [int(year) for year in set(scrapped_data["Year"])]
-        years = st.sidebar.slider("Years", min(list_years), max(list_years), (min(list_years), max(list_years)))
-        df, authors, sources, affiliations, papers, author_keywords = get_info_df(scrapped_data.to_csv())
-        str_num_items.markdown(f'Showing **{len(df.query(f"(Year >= {years[0]}) & (Year <= {years[1]})"))}** results')
-        st.markdown(f'Showing **{len(df.query(f"(Year >= {years[0]}) & (Year <= {years[1]})"))}** results')
-        print_analysis(df, authors, sources, affiliations, papers, author_keywords, years, scimago_years, scimago_avaliable)
+        process_scraped_data(scrapped_data, str_num_items)
+
+
+def process_scraped_data(scrapped_data, str_num_items):
+    scimago_avaliable = st.sidebar.checkbox("Scimago and Scopus available")
+    scimago_years = []
+    list_years = [int(year) for year in set(scrapped_data["Year"])]
+    years = st.sidebar.slider("Years", min(list_years), max(list_years), (min(list_years), max(list_years)))
+    df, authors, sources, affiliations, papers, author_keywords = get_info_df(scrapped_data.to_csv())
+    str_num_items.markdown(f'Showing **{len(df.query(f"(Year >= {years[0]}) & (Year <= {years[1]})"))}** results')
+    st.markdown(f'Showing **{len(df.query(f"(Year >= {years[0]}) & (Year <= {years[1]})"))}** results')
+    print_analysis(df, authors, sources, affiliations, papers, author_keywords, years, scimago_years, scimago_avaliable)
+
+
+def process_uploaded_file(uploaded_file, str_num_items):
+    scimago_avaliable = st.sidebar.checkbox("Scimago available")
+    scimago_years = []
+    df, authors, sources, affiliations, papers, author_keywords = get_info_csv(uploaded_file)
+    list_years = [int(year) for year in set(df["Year"])]
+    years = st.sidebar.slider("Years", min(list_years), max(list_years), (min(list_years), max(list_years)))
+    str_num_items.markdown(f'Showing **{len(df.query(f"(Year >= {years[0]}) & (Year <= {years[1]})"))}** results')
+    st.markdown(f'Showing **{len(df.query(f"(Year >= {years[0]}) & (Year <= {years[1]})"))}** results')
+    print_analysis(df, authors, sources, affiliations, papers, author_keywords, years, scimago_years, scimago_avaliable)
 
 
 if __name__ == "__main__":
